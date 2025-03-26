@@ -5,7 +5,8 @@ This technical challenge is designed to test your expertise in ETL, specifically
 
 As a Senior Data Engineer, your task is to design a production-grade, robust ETL pipeline to extract data from an open source API, set up the pipeline with daily loading, and perform some transformational analysis.
 
-**!!! NOTE: You are not required to spend more than 1.5 Hrs on this task. If you get stuck, simply proceed with another part of this task and include a README in your submission what steps you would have taken to complete the task.**
+> [!NOTE]
+> You are not required to spend more than 1.5 Hrs on this task. If you get stuck, simply proceed with another part of this task and include a README in your submission what steps you would have taken to complete the task.**
 
 ## Getting Started
 1. Read through the whole README before starting.
@@ -23,6 +24,7 @@ As a Senior Data Engineer, your task is to design a production-grade, robust ETL
 - Google Cloud Platform (https://console.cloud.google.com/) - sign up with a new Google account for $300 in free credit (services free below a quota: https://cloud.google.com/free). 
 > [!NOTE]
 > This tech task only requires the free tier of these platforms. GCP will automatically end the trial in 90 days and cap your credits (https://cloud.google.com/signup-faqs).
+
 > [!CAUTION]
 > If you wish to continue using your credits after this tech task, please decommission any of the charging services and APIs used for this tech task to avoid excessive credit use.
 
