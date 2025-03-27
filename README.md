@@ -32,12 +32,23 @@ As a Senior Data Engineer, your task is to design a production-grade, robust ETL
 
 Use your personal judgement to identify appropriate GCP service(s) to construct this pipeline.
 
-1. Load in data from OpenWeather API (https://openweathermap.org/api) back to 2024.
-2. Create pipeline to load new data daily. As this uses GCP services that charges your credits, feel free to simply save your deploy script in this repo and an instructional after testing. You can then delete the service or disable the API.
+1. For *ALL* of the below US cities, load in the 1st weeks worth of data for 2024 from OpenWeather API (https://openweathermap.org/api). This will be used for analysis later.
+   - Sioux Falls,US
+   - Great Falls,US
+   - Houghton,Michigan,US
+   - Fargo,North Dakota,US
+   - Duluth,Minnesota,US
+   - Bismarck,North Dakota,US
+   - Aberdeen,South Dakota,US
+   - Grand Island,Nebraska,US
+   - Glasgow,Montana,US
+   - Omaha,US
+   - Portland,US
+2. Create a pipeline to load yesterday's data daily. As this uses GCP services that charges your credits, feel free to simply save your deploy script in this repo and an instructional after testing. You can then delete the service or disable the API.
 3. In BigQuery, load the data into object(s) prefixed with your initials, e.g. John Smith will create object(s) prefixed `js_` 
 
 ### Analysis Challenge
-Write SQL queries to answer the following questions use the publicly available dataset `bigquery-public-data.geo_us_boundaries` by matching with the OpenWeatherMap data, all of the questions pertain to the period `March 2024`:
+Write SQL queries to answer the following questions use the publicly available dataset `bigquery-public-data.geo_us_boundaries` by matching with the OpenWeatherMap data, all of the questions pertain to the historical data load:
 1. Provide the average daily temperature for each city in each state.
 2. Find the top 3 cities with the highest average humidity in each state.
 3. Find the percentage of cities in each state experiencing "rain" as the weather condition.
