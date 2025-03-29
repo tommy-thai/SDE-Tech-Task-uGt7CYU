@@ -16,36 +16,46 @@ The module **app.main()** executes the pipeline in the following order:
 # Deliverables Description
 ##  1.Python ETL
 
+### Cloud Run Job
+
 I decided to deploy this ETL as a Cloud Run Job, due: 1-It can be easily scheduled to run daily.
 2-This ETL has the risk that if it's rerun multiple times on the same day, it would generate duplicated data. Ideally the data should be added into a 'temp_table' that is merged with a 'permanent_table'. Then data in the 'temp_table' has to be deleted.
 
-### Missing steps
+### Airflow 
+I didn't consider to use this option, since I understood that the challenge was to deploy the ETL, and I don't have experience deploying an Airflow environment.
+
+This is a the correct approach if you want to have a scalable solution.
+
+If I used Airflow, the DAG would be:
+
+**t1**: Running a query to create the completed list of locations with lat and lon. Passing this list as an output for t2. \
+**t2**: From the output of t1 sending the request to the Open Weather API, and writing the response into a bucket in Cloud Storage as 'weather_data.csv' file. This file would be link to a federated table in BQ `hnesman-challenge.hn_etl.hn_locations_weather_csv` \ 
+**t3**: Run a MERGE/UPDATE query between the federated table and the permanent native table in BQ `hnesman-challenge.hn_etl.hn_locations_weather`. **Here is the query:** sql/merge.sql  \
+**t4**: Move the 'weather_data.csv' file in Cloud Storage into a backup bucket as 'weather_data_YYYY-MM-DD.csv'
+
+
+
+
+
+
+
+### Missing steps for the Cloud Run Deployment
 **1**-Create a Dockerfile that:  
-  1.1-setups the environment
+  1.1-setups the environment\
+  1.2-install the dependencies\
+  1.3-copies the folder /etl_pipeline into the container\
+  1.4-runs the ENTRYPOINT\
+  1.5-runs the ENTRYPOINT 
 
-  1.2-install the dependencies
-
-  1.3-copies the folder /etl_pipeline into the container
-
-  1.4-runs the ENTRYPOINT
-
-  1.5-runs the ENTRYPOINT
 
 **2**-Create a .github/workflows.yaml file
-
-2.1-it's triggered when 'push to main or feature/**' 
-
-2.2-Set's up the environment variables, for deployment to GCP. I have to the Service_Accounts_Keys as a Secret in GitHub Actions.
-
-2.3-Runs 'tests' (didn't include Tests as I have very little experience)
-
-2.4-Authenticates with GCP
-
-2.5-Builds and Push the image to Artifact Registry
-
-2.6-Deploy the image to a Cloud Run Job, -it has to pass a the Open Weather API Key as a Secret when deploying, hence the Open Weather API Key should be uploaded to Secret Manager -
-
-2.7-Creates a trigger to execute the Job daily
+  2.1-it's triggered when 'push to main or feature/**' \
+  2.2-Set's up the environment variables, for deployment to GCP. I have to the Service_Accounts_Keys as a Secret in GitHub Actions.\
+  2.3-Runs 'tests' (didn't include Tests as I have very little experience) \
+  2.4-Authenticates with GCP \
+  2.5-Builds and Push the image to Artifact Registry \
+  2.6-Deploy the image to a Cloud Run Job, -it has to pass a the Open Weather API Key as a Secret when deploying, hence the Open Weather API Key should be uploaded to Secret Manager - \
+  2.7-Creates a trigger to execute the Job daily
 
 
 ## 2.**Unit Tests**  
