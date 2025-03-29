@@ -1,88 +1,242 @@
-# Senior Data Engineer Tech Task
+# **ETL**
 
-## Introduction
-This technical challenge is designed to test your expertise in ETL, specifically using GCP services. 
+The module **app.main()** executes the pipeline in the following order:
 
-As a Senior Data Engineer, your task is to design a production-grade, robust ETL pipeline to extract data from an open source API, set up the pipeline with daily loading, and perform some transformational analysis.
+1-Extracts the data from Open Weather API. It uses the file 'locations_complete.json' to extract lat/lon.
+    1.1-'locations_complete.json' can be created using **geocode_api.py**
+    
+  **NOTE:** I got confused with the assignment, and used the Geocode API to extract the lat/long. I'm aware that I made a mistake in this step.
 
-> [!NOTE]
-> You are not required to spend more than 1.5 Hrs on this task. If you get stuck, simply proceed with another part of this task and include a README in your submission what steps you would have taken to complete the task.**
+2-Parses the data
 
-## Getting Started
-1. Read through the whole README before starting.
-2. Fork following this format `applicant-[yourGithubUsername]`, e.g. user `john-smith` should use `applicant-john-smith` and clone this repository. Placeholder directories have been created to get you started.
-3. Follow the instructions outlined in the [Task Details](#task-details) section.
-   1. [ETL Challenge](#etl-challenge) - Build an ETL pipeline
-   2. [Analysis Challenge](#analysis-challenge) - Write SQL queries to answer the posed questions
-   3. [Submit](#submit) - Grant us access to the project to evaluate your submission
-4. Write unit tests to cover your code.
+3-Loads the data into BigQuery in the table `hnesman-challenge.hn_etl.hn_locations_weather`
 
-## Task Details
 
-### Resources
-- OpenWeather API (https://openweathermap.org/api) - sign up for a free to use API key.
-- Google Cloud Platform (https://console.cloud.google.com/) - sign up with a new Google account for $300 in free credit (services free below a quota: https://cloud.google.com/free). 
-> [!NOTE]
-> This tech task only requires the free tier of these platforms. GCP will automatically end the trial in 90 days and cap your credits (https://cloud.google.com/signup-faqs).
 
-> [!CAUTION]
-> If you wish to continue using your credits after this tech task, please decommission any of the charging services and APIs used for this tech task to avoid excessive credit use.
+# Deliverables Description
+##  1.Python ETL
 
-### ETL Challenge
+### Cloud Run Job
 
-Use your personal judgement to identify appropriate GCP service(s) to construct this pipeline.
+I decided to deploy this ETL as a Cloud Run Job, due: 1-It can be easily scheduled to run daily.
+2-This ETL has the risk that if it's rerun multiple times on the same day, it would generate duplicated data. Ideally the data should be added into a 'temp_table' that is merged with a 'permanent_table'. Then data in the 'temp_table' has to be deleted.
 
-1. For *ALL* of the below US cities, load in the 1st weeks worth of data for 2024 from OpenWeather API (https://openweathermap.org/api). This will be used for analysis later.
-   - Sioux Falls,US
-   - Great Falls,US
-   - Houghton,Michigan,US
-   - Fargo,North Dakota,US
-   - Duluth,Minnesota,US
-   - Bismarck,North Dakota,US
-   - Aberdeen,South Dakota,US
-   - Grand Island,Nebraska,US
-   - Glasgow,Montana,US
-   - Omaha,US
-   - Portland,US
-2. Create a pipeline to load yesterday's data daily. As this uses GCP services that charges your credits, feel free to simply save your deploy script in this repo and an instructional after testing. You can then delete the service or disable the API.
-3. In BigQuery, load the data into object(s) prefixed with your initials, e.g. John Smith will create object(s) prefixed `js_` 
+### Airflow 
+I didn't consider to use this option, since I understood that the challenge was to deploy the ETL, and I don't have experience deploying an Airflow environment.
 
-### Analysis Challenge
-Write SQL queries to answer the following questions use the publicly available dataset `bigquery-public-data.geo_us_boundaries` by matching with the OpenWeatherMap data, all of the questions pertain to the historical data load:
-1. Provide the average daily temperature for each city in each state.
-2. Find the top 3 cities with the highest average humidity in each state.
-3. Find the percentage of cities in each state experiencing "rain" as the weather condition.
+This is a the correct approach if you want to have a scalable solution.
 
-Make sure that your queries can be run against the database created in the ETL.
+If I used Airflow, the DAG would be:
 
-### Submit
-Grant the following people `Editor` access to your GCP project, this is needed to bring your services into our environment which allows you to decommission your services if you wish.
-- tommy.thai@essencemediacom.com
-- charlie.cleaver@essencemediacom.com
+**t1**: Running a query to create the completed list of locations with lat and lon. Passing this list as an output for t2. **Here is the query:** sql/city_lan_lon.sql  \
+**t2**: From the output of t1 sending the request to the Open Weather API, and writing the response into a bucket in Cloud Storage as 'weather_data.csv' file. This file would be link to a federated table in BQ `hnesman-challenge.hn_etl.hn_locations_weather_csv` \ 
+**t3**: Run a MERGE/UPDATE query between the federated table and the permanent native table in BQ `hnesman-challenge.hn_etl.hn_locations_weather`. **Here is the query:** sql/merge.sql  \
+**t4**: Move the 'weather_data.csv' file in Cloud Storage into a backup bucket as 'weather_data_YYYY-MM-DD.csv'
 
-## Deliverables
-1. [ ] **Python ETL** - A production ETL pipeline that is ready to run and deployable.
-2. [ ] **Unit Tests** - A collection of unit tests for your ETL pipeline.
-3. [ ] **SQL** - SQL schema creation file and any additional SQL query files.
-4. [ ] **SQL Answers** - Answers to the SQL analysis challenge questions in a Markdown file, including the SQL queries used.
-5. [ ] **Evidence** - Any additional evidence not already supplied e.g. deploy scripts and resources for GCP services consuming credits.
-6. [ ] **README** - A detailed README.md that includes all required documentation.
-7. [ ] Any additional documentation you think would be helpful for understanding your approach.
 
-## Evaluation Criteria
-1. [ ] **Code Quality**: Efficient data manipulation with Python and SQL. Clear, well-structured code that clearly has maintainability and collaboration in mind.
-2. [ ] **DB Proficiency**: Demonstrate SQL optimization and complexity through the analysis challenge. And demonstrating understanding of database optimisations with future proofing in mind.
-3. [ ] **Error Handling**: Gracefully handle potential errors or irregularities in data and in process.
-4. [ ] **Testing**: Include unit tests to verify each part of the ETL process.
-5. [ ] **Documentation**: A clear README.md that explains setup, execution, any assumptions made, and any other information you would like to include.
 
-## How To Submit Your Solution
-Fork this repository following this format `applicant-[yourGithubUsername]`, e.g. user `john-smith` should use `applicant-john-smith`. Commit your changes to your repo, and send a pull request to the original repo. 
 
-Grant the following people `Editor` access to your GCP project, this is needed to bring your services into our environment which allows you to decommission your services if you wish.
-- tommy.thai@essencemediacom.com
-- charlie.cleaver@essencemediacom.com
 
-We will review your submission and get back to you with our feedback.
 
-Good luck!
+
+### Missing steps for the Cloud Run Deployment
+**1**-Create a Dockerfile that:  
+  1.1-setups the environment\
+  1.2-install the dependencies\
+  1.3-copies the folder /etl_pipeline into the container\
+  1.4-runs the ENTRYPOINT\
+  1.5-runs the ENTRYPOINT 
+
+
+**2**-Create a .github/workflows.yaml file
+  2.1-it's triggered when 'push to main or feature/**' \
+  2.2-Set's up the environment variables, for deployment to GCP. I have to the Service_Accounts_Keys as a Secret in GitHub Actions.\
+  2.3-Runs 'tests' (didn't include Tests as I have very little experience) \
+  2.4-Authenticates with GCP \
+  2.5-Builds and Push the image to Artifact Registry \
+  2.6-Deploy the image to a Cloud Run Job, -it has to pass a the Open Weather API Key as a Secret when deploying, hence the Open Weather API Key should be uploaded to Secret Manager - \
+  2.7-Creates a trigger to execute the Job daily
+
+
+## 2.**Unit Tests**  
+Didn't answer this one as my experience with testing is very limited.
+##  3.**SQL** 
+
+### I created the BQ table for the historic data using the module  **bq_utils.py**
+
+**table_name:**`hnesman-challenge.hn_etl.hn_locations_weather`
+
+#### I used the schema below:
+```
+    schema = [
+        SchemaField("city", "STRING", mode="NULLABLE"),
+        SchemaField("state", "STRING", mode="NULLABLE"),
+        SchemaField("country", "STRING", mode="NULLABLE"),
+        SchemaField("lat", "FLOAT", mode="NULLABLE"),
+        SchemaField("lon", "FLOAT", mode="NULLABLE"),
+        SchemaField("date", "DATE", mode="REQUIRED"),
+        SchemaField(
+            "data", 
+            "RECORD", 
+            mode="REPEATED",  # Because it's an array of structs
+            fields=[
+                SchemaField("dt", "INTEGER", mode="NULLABLE"),
+                SchemaField("sunrise", "INTEGER", mode="NULLABLE"),
+                SchemaField("sunset", "INTEGER", mode="NULLABLE"),
+                SchemaField("temp", "FLOAT", mode="NULLABLE"),
+                SchemaField("feels_like", "FLOAT", mode="NULLABLE"),
+                SchemaField("pressure", "INTEGER", mode="NULLABLE"),
+                SchemaField("humidity", "INTEGER", mode="NULLABLE"),
+                SchemaField("dew_point", "FLOAT", mode="NULLABLE"),
+                SchemaField("uvi", "FLOAT", mode="NULLABLE"),
+                SchemaField("clouds", "INTEGER", mode="NULLABLE"),
+                SchemaField("visibility", "INTEGER", mode="NULLABLE"),
+                SchemaField("wind_speed", "FLOAT", mode="NULLABLE"),
+                SchemaField("wind_deg", "INTEGER", mode="NULLABLE"),
+                SchemaField("wind_gust", "FLOAT", mode="NULLABLE"),
+                SchemaField(
+                    "weather", 
+                    "RECORD", 
+                    mode="REPEATED",  # Because it's an array
+                    fields=[
+                        SchemaField("id", "INTEGER", mode="NULLABLE"),
+                        SchemaField("main", "STRING", mode="NULLABLE"),
+                        SchemaField("description", "STRING", mode="NULLABLE"),
+                        SchemaField("icon", "STRING", mode="NULLABLE"),
+                    ],
+                ),
+            ],
+        ),
+    ]
+
+
+
+```
+
+To create the table I used the module **bq_utils.py**
+
+```
+
+project = os.getenv("PROJECT_ID")
+dataset = 'hn_etl'
+table = 'hn_locations_weather'
+
+client = BigQueryIO(table, dataset, project)
+client.create_table(schema)
+```
+
+##  4.**SQL Answers**
+
+### 1. Provide the average daily temperature for each city in each state.
+
+**NOTES:**
+
+**a.** The average temperature is in Kelvin
+
+
+**a.** I fetched the temperature 
+```
+WITH filtered_data AS (
+
+SELECT 
+  city,
+  state,
+  data
+FROM `hnesman-challenge.hn_etl.hn_locations_weather`
+ -- I could declare 'DATE' as a variable, and pass it as a parameter
+WHERE DATE BETWEEN '2024-01-01'AND '2024-01-07'
+)
+SELECT 
+  city,
+  state,
+  AVG(data.temp) as AVG_TEMP_KELVIN
+FROM filtered_data,
+UNNEST (data) as data
+GROUP BY city, state
+```
+### 2. Find the top 3 cities with the highest average humidity in each state.
+
+**NOTES:**
+
+**a.** Taking the top 3 might seem trivial since there are at most two 'cities' per 'state'. However, if we were to extend the query to cover the entire country, it would become more relevant.
+
+```
+WITH filtered_data AS (
+
+SELECT 
+  city,
+  state,
+  data
+  FROM `hnesman-challenge.hn_etl.hn_locations_weather`
+  -- I could declare 'DATE' as a variable, and pass it as a parameter
+  WHERE DATE BETWEEN '2024-01-01'AND '2024-01-07'
+),
+grouped_data AS (
+  SELECT 
+    city,
+    state,
+    AVG(data.humidity) AS AVG_HUMIDITY
+  FROM filtered_data,
+  UNNEST (data) as data
+  GROUP BY city, state
+),
+
+ranked_data AS (
+SELECT 
+  city,
+  state,
+  AVG_HUMIDITY,
+  RANK() OVER (PARTITION BY state order by AVG_HUMIDITY DESC) as rank_humid
+FROM grouped_data
+)
+
+SELECT 
+  city,
+  state,
+  AVG_HUMIDITY,
+  rank_humid
+FROM ranked_data
+WHERE rank_humid <= 3
+ORDER BY state, rank_humid DESC
+```
+
+### 3. Find the percentage of cities in each state experiencing "rain" as the weather condition.
+
+**NOTES:**
+
+**a.**Have to add a filter for a one single day, to make sense of this calculation
+
+```
+
+-- 3. Find the percentage of cities in each state experiencing "rain" as the weather condition.
+
+WITH daily_data AS (
+  SELECT 
+    city,
+    state,
+    data,
+  FROM `hnesman-challenge.hn_etl.hn_locations_weather`
+
+  WHERE DATE = "2024-01-03" -- I could declare 'DATE' as a variable, and pass it as a parameter
+), 
+cat_data AS (
+  SELECT
+      city,
+      state,
+      CASE WHEN weather.main = 'Rain' THEN 1
+      ELSE 0
+      END AS rain_condition
+  FROM daily_data,
+    UNNEST (data) as data,
+    UNNEST (data.weather) as weather
+)
+SELECT 
+  ROUND(SUM(rain_condition)/COUNT(*) * 100) as perc_rain_cities  
+FROM cat_data
+```
+
+
+
+
+
+

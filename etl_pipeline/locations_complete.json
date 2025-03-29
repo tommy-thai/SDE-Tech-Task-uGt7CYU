@@ -1,0 +1,79 @@
+[
+    {
+        "city": "Sioux Falls",
+        "state": "South Dakota",
+        "country": "US",
+        "lat": 43.5488256,
+        "lon": -96.7307737
+    },
+    {
+        "city": "Great Falls",
+        "state": "Montana",
+        "country": "US",
+        "lat": 47.5048851,
+        "lon": -111.29189
+    },
+    {
+        "city": "Houghton",
+        "state": "Michigan",
+        "country": "US",
+        "lat": 47.121872,
+        "lon": -88.569012
+    },
+    {
+        "city": "Fargo",
+        "state": "North Dakota",
+        "country": "US",
+        "lat": 46.877229,
+        "lon": -96.789821
+    },
+    {
+        "city": "Duluth",
+        "state": "Minnesota",
+        "country": "US",
+        "lat": 46.7729322,
+        "lon": -92.1251218
+    },
+    {
+        "city": "Bismarck",
+        "state": "North Dakota",
+        "country": "US",
+        "lat": 46.808327,
+        "lon": -100.783739
+    },
+    {
+        "city": "Aberdeen",
+        "state": "South Dakota",
+        "country": "US",
+        "lat": 45.4649805,
+        "lon": -98.487813
+    },
+    {
+        "city": "Grand Island",
+        "state": "Nebraska",
+        "country": "US",
+        "lat": 40.924271,
+        "lon": -98.338685
+    },
+    {
+        "city": "Glasgow",
+        "state": "Montana",
+        "country": "US",
+        "lat": 48.1955915,
+        "lon": -106.635556
+    },
+    {
+        "city": "Omaha",
+        "state": "Nebraska",
+        "country": "US",
+        "lat": 41.2587459,
+        "lon": -95.9383758
+    },
+    {
+        "city": "Portland",
+        "state": "Oregon",
+        "country": "US",
+        "lat": 45.5202471,
+        "lon": -122.674194
+    }
+]
