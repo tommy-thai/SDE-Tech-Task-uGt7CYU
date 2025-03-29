@@ -28,7 +28,7 @@ This is a the correct approach if you want to have a scalable solution.
 
 If I used Airflow, the DAG would be:
 
-**t1**: Running a query to create the completed list of locations with lat and lon. Passing this list as an output for t2. \
+**t1**: Running a query to create the completed list of locations with lat and lon. Passing this list as an output for t2. **Here is the query:** sql/city_lan_lon.sql  \
 **t2**: From the output of t1 sending the request to the Open Weather API, and writing the response into a bucket in Cloud Storage as 'weather_data.csv' file. This file would be link to a federated table in BQ `hnesman-challenge.hn_etl.hn_locations_weather_csv` \ 
 **t3**: Run a MERGE/UPDATE query between the federated table and the permanent native table in BQ `hnesman-challenge.hn_etl.hn_locations_weather`. **Here is the query:** sql/merge.sql  \
 **t4**: Move the 'weather_data.csv' file in Cloud Storage into a backup bucket as 'weather_data_YYYY-MM-DD.csv'
