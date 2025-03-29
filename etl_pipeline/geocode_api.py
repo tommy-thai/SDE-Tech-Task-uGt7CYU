@@ -12,24 +12,34 @@ class CODE_LOCATOR:
         self.API_KEY = json.load(open("etl_pipeline/open_weather.json"))["API_KEY"]
         self.LOCATIONS = json.load(open("etl_pipeline/locations.json"))
 
-    def add_missing_info(self):
+
+    def add_missing_info(self) -> list[dict]:
+        """ 
+        This function adds missing information to the locations list by fetching
+        latitude and longitude from the OpenWeatherMap API.
+        """
         locations_list = []
         for location in self.LOCATIONS:
             city = location["city"]
             state = location["state"]
             country = location["country"]
-            lat, lon, state = self._fetch_lat_lon(city, state, country)
-            location["lat"] = lat
-            location["lon"] = lon
-            location["state"] = state
-            locations_list.append(location)
+            try:
+                lat, lon, state = self._fetch_lat_lon(city, state, country)
+                location["lat"] = lat
+                location["lon"] = lon
+                location["state"] = state
+                locations_list.append(location)
+            except Exception as e:
+                print(f"Error fetching data for {city}, {state}, {country}: {e}")
+                continue
 
         return locations_list
 
-    def _fetch_lat_lon(self, city, state, country):
+    def _fetch_lat_lon(self, city: str, state: str, country:str) -> tuple[float, float, str]:
         if state == None:
             state = ""
         url = f"{self.API_PREFIX}q={city},{state},{country}&appid={self.API_KEY}"
+        print(url)
 
         response = requests.get(url)
         response = response.text
@@ -40,11 +50,15 @@ class CODE_LOCATOR:
             lon = response[0]["lon"]
             state = response[0]["state"]
             return lat, lon, state
-        except IndexError as e:
+        except KeyError as e:
             print(e)
 
 
-def main():
+def main(): 
+    '''
+    Main function to execute the code locator and fetch missing information.
+    Creates a JSON file with the updated locations.
+    '''
 
     client = CODE_LOCATOR()
     locations = client.add_missing_info()
@@ -58,7 +72,7 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
+    main()
 
 
     # city = 'Portland'
